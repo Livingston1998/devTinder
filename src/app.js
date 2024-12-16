@@ -4,8 +4,12 @@ const app = express();
 const User = require("./models/user");
 const {signupValidation} = require("./utils/validation");
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken");
+const cookieparser = require("cookie-parser");
+const {userAuth} = require("./middlewares/auth")
 app.use(express.json());
+// To read the cookies . we need to add a middleware called cookie-parser
+app.use(cookieparser());
 
 app.post("/signup", async (req,res) => {
     //Always use try&catch for database related operations and also for async operations.
@@ -34,22 +38,46 @@ app.post("/login",async(req,res) =>{
         if(!isPasswordValid) {
             throw new Error("Invalid emailId or password");
         }
+        //creating a JWT token
+        const token = await jwt.sign({_id: user._id},"Think@21",{ expiresIn: '1h' });
+
+        // Add the token to the cookie and send back to the client
+        res.cookie("token",token,{ expires: new Date(Date.now() + 900000)});
         res.send("Logged in Successfully");
         
     }catch(err) {
         res.status(400).send("Error: " + err.message);
     }
+});
+
+//Sending Connection request
+app.post("/sendingConnectionRequest",userAuth, (req,res) => {
+    const user = req.user;
+    res.send(user.firstName +"sent request!!!!!");
 })
+
+//GET user Profile - /profile
+app.get("/profile",userAuth,async(req,res) => {
+    try{
+        const user = req.user;
+        res.send(user);
+    } catch(err) {
+        res.status(400).send("Error: " + err.message);
+    }
+    
+});
 
 // Get User by emailId
 app.get("/user",async(req,res) => {
     const userEmail = req.body.emailId;
     try{
-        console.log(userEmail)
         const user = await User.find({emailId:userEmail});
+        if(!user.length>0) {
+            throw new Error("User not found");
+        }
         res.send(user);
     }catch(err) {
-        res.status(400).send("User not found");
+        res.status(400).send("Error : "+ err.message);
     }
     
 });
@@ -77,14 +105,19 @@ app.delete("/user",async(req,res) => {
 });
 
 //Update API - PATCH /user - update a user field by Id
-app.patch("/user",async(req,res) => {
-    const userId = req.body.userId;
+app.patch("/user/:userId",async(req,res) => {
+    const userId = req.params?.userId;
     const data = req.body;
     try{
+        const validUpdates = ['age','gender'];
+        const isUpdateAllowed = Object.keys(data).every((key) => validUpdates.includes(key));
+        if(!isUpdateAllowed) {
+            throw new Error("Update not Allowed");
+        }
         const user = await User.findByIdAndUpdate(userId,data, {returnDocument:"after",runValidators:true});
         res.send(`${user} updated successfully!`);
     } catch(err) {
-        res.status(400).send("Something went wrong" + err.message);
+        res.status(400).send("ERROR: " + err.message);
     }
 });
 
