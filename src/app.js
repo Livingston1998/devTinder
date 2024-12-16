@@ -34,13 +34,11 @@ app.post("/login",async(req,res) =>{
         if(!user){
             throw new Error("Invalid emailId or password");
         }
-        const isPasswordValid = await bcrypt.compare(password,user.password);
+        const isPasswordValid = await user.validatePassword(password);
         if(!isPasswordValid) {
             throw new Error("Invalid emailId or password");
         }
-        //creating a JWT token
-        const token = await jwt.sign({_id: user._id},"Think@21",{ expiresIn: '1h' });
-
+        const token  = user.getJWT();
         // Add the token to the cookie and send back to the client
         res.cookie("token",token,{ expires: new Date(Date.now() + 900000)});
         res.send("Logged in Successfully");
