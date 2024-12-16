@@ -52,7 +52,6 @@ const userSchema = mongoose.Schema({
 
 userSchema.methods.getJWT = async function () {
     const user = this; //here this is refers to userschema. even this will refer to user schema in DB as well.
-
      //creating a JWT token
      const token = await jwt.sign({_id: user._id},"Think@21",{ expiresIn: '1h' });
 
