@@ -43,7 +43,10 @@ const userSchema = mongoose.Schema({
     gender: {
         type: String,
         lowercase: true,
-        enum: ["male", "female","others"],
+        enum:{
+            values: ["male", "female","others"],
+            message: `{VALUE} is not valid`
+        } 
     },
 },
 {
@@ -63,6 +66,11 @@ userSchema.methods.validatePassword = async function (passwordInputByUser) {
     const passwordHashed = user.password;
     const isPasswordValid = await bcrypt.compare(passwordInputByUser,passwordHashed);
     return isPasswordValid;
+}
+
+userSchema.methods.hashPassword = async function(password) {
+    const hasedPassword =  await bcrypt.hash(password,10);
+    return hasedPassword;
 }
 
 module.exports = mongoose.model('User', userSchema);
