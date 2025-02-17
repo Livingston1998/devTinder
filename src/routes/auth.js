@@ -4,13 +4,13 @@ const User = require("../models/user");
 const {signupValidation} = require("../utils/validation");
 const bcrypt = require("bcrypt");
 
-// PPOST - /signUp 
+// POST - /signUp
 authRouter.post("/signup", async (req,res) => {
     //Always use try&catch for database related operations and also for async operations.
     try{
         signupValidation(req);
         const {firstName,lastName,emailId,password}  = req.body;
-        const passwordHash = User.hashPassword(password);
+        const passwordHash = await bcrypt.hash(password,10);
         //Creating a new instance of the User model
         const user = new User ({firstName,lastName,emailId,password: passwordHash});
         await user.save();
