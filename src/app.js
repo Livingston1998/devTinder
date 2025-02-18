@@ -3,6 +3,7 @@ const connectDB = require("./config/database")
 const app = express();
 const User = require("./models/user");
 const cookieparser = require("cookie-parser");
+const PORT = 7777;
 app.use(express.json());
 // To read the cookies . we need to add a middleware called cookie-parser
 app.use(cookieparser());
@@ -73,8 +74,8 @@ app.patch("/user/:userId",async(req,res) => {
 
 connectDB().then(() => {
         console.log("Database Connection Established Successfully.......");
-        app.listen(7777,() => {
-            console.log("Server is sucessfully listening on port 3000....");
+        app.listen(PORT,() => {
+            console.log(`Server is sucessfully listening on port ${PORT}....`);
         });
     }).catch((err) =>{
         console.error("Database cannot be connected" + err.message);
