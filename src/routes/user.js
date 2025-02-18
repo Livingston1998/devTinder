@@ -49,7 +49,7 @@ userRouter.get("/user/feed", userAuth,async(req,res) => {
     try{
         const loggedInUser = req.user;
         const page = req.query.page || 1;
-        const limit = req.query.limit || 2;
+        let limit = req.query.limit || 2;
         limit = limit > 3 ? 3: limit;
         const skip = (page-1) * limit; // this formula will work like this page -> 2,limit -> 10, => then skip will be 1* 10 = 10. it will skip first 10 records
         const connectionRequests = await connectionRequest.find({
